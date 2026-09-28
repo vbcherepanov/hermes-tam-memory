@@ -1,0 +1,5 @@
+name: tam
+version: 0.1.0
+description: "total-agent-memory (TAM): local-first long-term memory over MCP — per-turn capture, recall before each turn, tam_recall/tam_save tools; optional team server."
+author: Vitalii Cherepanov
+requires_hermes: ">=0.21.4"

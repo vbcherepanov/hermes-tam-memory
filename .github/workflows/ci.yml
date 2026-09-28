@@ -1,0 +1,87 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  # Hermes commit the plugin was verified against; bump deliberately.
+  HERMES_REPO: NousResearch/hermes-agent
+  HERMES_REF: 59004a62356f3a4697ab0fe8ad5086d2b405e2a6
+  # TAM release used by the integration job.
+  TAM_VERSION: "14.6.0"
+  PYTHON_VERSION: "3.14"
+  TAM_PYTHON_VERSION: "3.12"
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - run: pip install "ruff>=0.6,<1" "mypy>=1.11,<2"
+      - run: ruff check .
+      - run: ruff format --check .
+      - run: mypy
+
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ env.HERMES_REPO }}
+          ref: ${{ env.HERMES_REF }}
+          path: hermes-agent
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install Hermes and the plugin
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ./hermes-agent
+          pip install -e ".[dev]"
+      - name: Unit tests
+        run: pytest -m "not integration" --ignore=hermes-agent
+
+  integration:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ env.HERMES_REPO }}
+          ref: ${{ env.HERMES_REF }}
+          path: hermes-agent
+      - uses: actions/setup-python@v5
+        with:
+          # TAM runs on its own interpreter (its wheels cover 3.11-3.13); the last entry is the default.
+          python-version: |
+            ${{ env.TAM_PYTHON_VERSION }}
+            ${{ env.PYTHON_VERSION }}
+      - name: Install Hermes and the plugin
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ./hermes-agent
+          pip install -e ".[dev]"
+      - name: Install TAM in its own virtualenv
+        run: |
+          "python${TAM_PYTHON_VERSION}" -m venv "$RUNNER_TEMP/tam"
+          "$RUNNER_TEMP/tam/bin/pip" install "total-agent-memory==${TAM_VERSION}"
+      - name: Integration tests against a real TAM (temp data dirs)
+        env:
+          TAM_INTEGRATION_COMMAND: ${{ runner.temp }}/tam/bin/tam
+          TAM_INTEGRATION_TEAM_COMMAND: ${{ runner.temp }}/tam/bin/tam-team
+          TAM_MODEL_CACHE: ${{ runner.temp }}/tam-models
+        run: pytest -m integration --ignore=hermes-agent

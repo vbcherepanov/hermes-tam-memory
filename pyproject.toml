@@ -1,0 +1,62 @@
+[build-system]
+requires = ["hatchling>=1.25,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "hermes-tam-memory"
+version = "0.1.0"
+description = "total-agent-memory (TAM) memory provider plugin for Hermes Agent"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Vitalii Cherepanov", email = "vbcherepanov@gmail.com" }]
+keywords = ["hermes-agent", "memory", "mcp", "total-agent-memory", "agent-memory"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+# Stdlib only: the plugin talks to TAM over MCP and adds nothing to the Hermes environment.
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8.3,<9", "ruff>=0.6,<1", "mypy>=1.11,<2"]
+
+[project.urls]
+Homepage = "https://github.com/vbcherepanov/hermes-tam-memory"
+"TAM" = "https://github.com/vbcherepanov/total-agent-memory"
+
+[project.entry-points."hermes_agent.memory_providers"]
+tam = "hermes_tam_memory:register"
+
+[tool.hatch.build.targets.wheel]
+packages = ["hermes_tam_memory"]
+
+[tool.hatch.build.targets.sdist]
+include = ["hermes_tam_memory", "tests", "README.md", "CHANGELOG.md", "LICENSE"]
+
+[tool.pytest.ini_options]
+addopts = "--import-mode=importlib"
+testpaths = ["tests"]
+pythonpath = [".", "tests"]
+markers = ["integration: needs a real TAM install (set TAM_INTEGRATION_COMMAND)"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["hermes_tam_memory"]
+known-third-party = ["agent", "hermes_cli", "hermes_constants", "toolsets", "utils", "support"]
+
+[tool.mypy]
+python_version = "3.11"
+check_untyped_defs = true
+ignore_missing_imports = true
+follow_imports = "silent"
+files = ["hermes_tam_memory"]
