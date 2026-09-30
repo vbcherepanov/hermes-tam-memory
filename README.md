@@ -72,7 +72,7 @@ TAM project name for Hermes memories [hermes]:
 
 In remote mode it asks for the URL (for example `http://127.0.0.1:3737/mcp/`) and an optional team
 token instead. After saving, it connects once and prints the result, e.g.
-`Connected: total-agent-memory 14.6.0 (local server, MCP 2025-06-18).` Start a new Hermes session to
+`Connected: total-agent-memory 14.7.0 (local server, MCP 2025-06-18).` Start a new Hermes session to
 activate the provider. `hermes memory status` shows the effective settings.
 
 To run a TAM team server for a company:

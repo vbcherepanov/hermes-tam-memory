@@ -13,7 +13,7 @@ env:
   HERMES_REPO: NousResearch/hermes-agent
   HERMES_REF: 59004a62356f3a4697ab0fe8ad5086d2b405e2a6
   # TAM release used by the integration job.
-  TAM_VERSION: "14.6.0"
+  TAM_VERSION: "14.7.0"
   PYTHON_VERSION: "3.14"
   TAM_PYTHON_VERSION: "3.12"
 
