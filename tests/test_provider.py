@@ -59,6 +59,39 @@ class TestAvailability:
         env = child_environment(TamConfig(memory_dir="/data", env={"EXTRA": "1"}), environ)
         assert env == {"PATH": "/bin", "TAM_MEMORY_DIR": "/data", "MEMORY_MODE": "fast", "EXTRA": "1"}
 
+    def test_child_environment_drops_credentials_under_tam_related_names(self):
+        environ = {
+            "PATH": "/bin",
+            "HF_TOKEN": "hf_x",
+            "OLLAMA_API_KEY": "ol_x",
+            "MEMORY_LLM_API_KEY": "sk-x",
+            "MEMORY_EMBED_API_KEY": "sk-y",
+            "TAM_WEBHOOK_SECRET": "s",
+            "XDG_DB_PASSWORD": "p",
+            "HF_BASE_URL": "https://hf.example",
+            "OLLAMA_HOST": "0.0.0.0",
+            "OLLAMA_URL": "http://127.0.0.1:11434",
+            "OLLAMA_EMBED_MODEL": "nomic-embed-text",
+            "FASTEMBED_MODEL": "m",
+            "FASTEMBED_CACHE_PATH": "/cache/fe",
+            "HF_HOME": "/cache/hf",
+            "HF_HUB_OFFLINE": "1",
+            "TRANSFORMERS_OFFLINE": "1",
+            "MEMORY_LLM_PROVIDER": "ollama",
+        }
+        env = child_environment(TamConfig(), environ)
+        assert env == {
+            "PATH": "/bin",
+            "OLLAMA_URL": "http://127.0.0.1:11434",
+            "OLLAMA_EMBED_MODEL": "nomic-embed-text",
+            "FASTEMBED_MODEL": "m",
+            "FASTEMBED_CACHE_PATH": "/cache/fe",
+            "HF_HOME": "/cache/hf",
+            "HF_HUB_OFFLINE": "1",
+            "TRANSFORMERS_OFFLINE": "1",
+            "MEMORY_LLM_PROVIDER": "ollama",
+        }
+
 
 class TestCaptureAndRecall:
     def test_turn_is_saved_and_recalled_in_next_session(self, fake_tam, provider):

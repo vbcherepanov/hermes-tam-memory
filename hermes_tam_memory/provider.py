@@ -68,9 +68,20 @@ SAFE_ENV_KEYS = frozenset(
         "TEMP",
         "TMP",
         "PATHEXT",
+        # Non-secret embedding/Ollama settings TAM reads. HF_* and OLLAMA_* are not prefix-matched:
+        # Hermes keeps HF_TOKEN and OLLAMA_API_KEY there.
+        "OLLAMA_URL",
+        "OLLAMA_EMBED_MODEL",
+        "FASTEMBED_MODEL",
+        "FASTEMBED_CACHE_PATH",
+        "HF_HOME",
+        "HF_HUB_OFFLINE",
+        "TRANSFORMERS_OFFLINE",
     }
 )
-SAFE_ENV_PREFIXES = ("XDG_", "TAM_", "MEMORY_", "CLAUDE_MEMORY_", "HF_", "FASTEMBED_", "OLLAMA_")
+SAFE_ENV_PREFIXES = ("XDG_", "TAM_", "MEMORY_", "CLAUDE_MEMORY_")
+# Credentials never cross into the child, even under an allowed prefix (TAM_API_TOKEN, MEMORY_LLM_API_KEY).
+SECRET_ENV_SUFFIXES = ("_TOKEN", "_API_KEY", "_SECRET", "_PASSWORD")
 
 RECALL_SCHEMA = {
     "name": TOOL_RECALL,
@@ -124,7 +135,9 @@ def child_environment(config: TamConfig, environ: Mapping[str, str]) -> dict[str
     env = {
         key: value
         for key, value in environ.items()
-        if (key in SAFE_ENV_KEYS or key.startswith(SAFE_ENV_PREFIXES)) and key != TOKEN_ENV
+        if (key in SAFE_ENV_KEYS or key.startswith(SAFE_ENV_PREFIXES))
+        and key != TOKEN_ENV
+        and not key.upper().endswith(SECRET_ENV_SUFFIXES)
     }
     if config.memory_dir:
         env["TAM_MEMORY_DIR"] = os.path.expanduser(config.memory_dir)

@@ -98,7 +98,7 @@ first group; edit the file for the rest.
 | `command` | `tam` | TAM executable name or absolute path (local) |
 | `args` | `[]` | Extra arguments for `command` |
 | `memory_dir` | `""` | Sets `TAM_MEMORY_DIR` for the spawned TAM; empty = TAM's default store |
-| `env` | `{}` | Extra environment variables for the spawned TAM |
+| `env` | `{}` | Extra environment variables for the spawned TAM, passed as written (the only way to hand it a key) |
 | `url` | `""` | TAM MCP endpoint (remote) |
 | `project` | `hermes` | TAM project that saved turns belong to |
 | `auto_capture` | `true` | Save completed turns |
@@ -127,9 +127,14 @@ different `memory_dir` per profile.
   **not** saved. Built-in memory `add` writes are mirrored. Subagent, cron and flush runs do not
   save turns automatically; only an explicit `tam_save` call writes from them.
 - **Local mode**: data goes to the `tam` process on your machine and into TAM's local store.
-  The spawned process gets a reduced environment (`PATH`, `HOME`, locale, temp dirs, and `TAM_*`,
-  `MEMORY_*`, `HF_*`, `FASTEMBED_*`, `OLLAMA_*` variables). Hermes' provider API keys are not passed
-  to it.
+  The spawned process gets a reduced environment: `PATH`, `HOME`, locale, temp dirs, `XDG_*`,
+  `TAM_*`, `MEMORY_*`, `CLAUDE_MEMORY_*`, and only these embedding settings: `OLLAMA_URL`,
+  `OLLAMA_EMBED_MODEL`, `FASTEMBED_MODEL`, `FASTEMBED_CACHE_PATH`, `HF_HOME`, `HF_HUB_OFFLINE`,
+  `TRANSFORMERS_OFFLINE`. No credential reaches it: Hermes' provider keys (including `HF_TOKEN` and
+  `OLLAMA_API_KEY`) are not passed, and any variable ending in `_TOKEN`, `_API_KEY`, `_SECRET` or
+  `_PASSWORD` is dropped even under an allowed prefix (so `TAM_API_TOKEN`, `MEMORY_LLM_API_KEY` and
+  `MEMORY_EMBED_API_KEY` stay out too). TAM features that need such a key must get it from the
+  `env` setting in `tam.json`, which is passed as written.
 - **Remote mode**: the same text goes to the configured URL. Use `https://` for anything that is
   not on localhost.
 - TAM's own optional features (LLM quality gate, enrichment) follow TAM's configuration. See the TAM

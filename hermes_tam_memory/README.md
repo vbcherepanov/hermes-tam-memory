@@ -10,7 +10,8 @@ Long-term memory for Hermes Agent backed by
 - Shares one store with other agents on the same TAM (Claude Code, Codex CLI, Cursor, ...).
 
 **Local-first.** By default Hermes starts your installed `tam` binary (MCP stdio), so data stays on
-your machine. The spawned process does not receive Hermes' provider API keys. Remote mode connects
+your machine. The spawned process gets a reduced environment with no credentials (no Hermes provider keys, no
+`*_TOKEN` / `*_API_KEY` / `*_SECRET` variables). Remote mode connects
 to a TAM HTTP endpoint or a TAM team server (URL + optional `TAM_API_TOKEN`) for shared team memory.
 
 ## Quick start
